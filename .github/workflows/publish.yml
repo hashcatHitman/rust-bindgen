@@ -14,7 +14,9 @@ jobs:
     if: ${{ !github.event.pull_request && (github.event.workflow_run.conclusion == 'success') && (github.event.workflow.name == 'Release') }}
     steps:
       - name: Print workflow event name
-        run: echo "${{ github.event.workflow.name }}"
+        run: echo "${GITHUB_EVENT_WORKFLOW_NAME}"
+        env:
+          GITHUB_EVENT_WORKFLOW_NAME: ${{ github.event.workflow.name }}
       - name: Checkout sources
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
