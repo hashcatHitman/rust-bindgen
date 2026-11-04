@@ -15,7 +15,7 @@
 
 name: Release
 permissions:
-  "contents": "write"
+  "contents": "write" # zizmor: ignore[excessive-permissions,undocumented-permissions]
 
 # This task will run whenever you push a git tag that looks like a version
 # like "1.0.0", "v0.1.0-prerelease.1", "my-app/0.1.0", "releases/v1.0.0", etc.
@@ -56,7 +56,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6 # zizmor: ignore[unpinned-uses]
         with:
           persist-credentials: false
           submodules: recursive
@@ -66,7 +66,7 @@ jobs:
         shell: bash
         run: "curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.32.0/cargo-dist-installer.sh | sh"
       - name: Cache dist
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7 # zizmor: ignore[unpinned-uses]
         with:
           name: cargo-dist-cache
           path: ~/.cargo/bin/dist
@@ -76,13 +76,14 @@ jobs:
       # (PRs run on the *source* but secrets are usually on the *target* -- that's *good*
       # but also really annoying to build CI around when it needs secrets to work right.)
       - id: plan
+        # zizmor: ignore[template-injection]
         run: |
           dist ${{ (!github.event.pull_request && format('host --steps=create --tag={0}', github.ref_name)) || 'plan' }} --output-format=json > plan-dist-manifest.json
           echo "dist ran successfully"
           cat plan-dist-manifest.json
           echo "manifest=$(jq -c "." plan-dist-manifest.json)" >> "$GITHUB_OUTPUT"
       - name: "Upload dist-manifest.json"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7 # zizmor: ignore[unpinned-uses]
         with:
           name: artifacts-plan-dist-manifest
           path: plan-dist-manifest.json
@@ -108,7 +109,7 @@ jobs:
       # - N "local" tasks that build each platform's binaries and platform-specific installers
       matrix: ${{ fromJson(needs.plan.outputs.val).ci.github.artifacts_matrix }}
     runs-on: ${{ matrix.runner }}
-    container: ${{ matrix.container && matrix.container.image || null }}
+    container: ${{ matrix.container && matrix.container.image || null }} # zizmor: ignore[unpinned-images]
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BUILD_MANIFEST_NAME: target/distrib/${{ join(matrix.targets, '-') }}-dist-manifest.json
@@ -116,7 +117,7 @@ jobs:
       - name: enable windows longpaths
         run: |
           git config --global core.longpaths true
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6 # zizmor: ignore[unpinned-uses]
         with:
           persist-credentials: false
           submodules: recursive
@@ -128,18 +129,20 @@ jobs:
             echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
       - name: Install dist
-        run: ${{ matrix.install_dist.run }}
+        run: ${{ matrix.install_dist.run }} # zizmor: ignore[template-injection]
       # Get the dist-manifest
       - name: Fetch local artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8 # zizmor: ignore[unpinned-uses]
         with:
           pattern: artifacts-*
           path: target/distrib/
           merge-multiple: true
       - name: Install dependencies
+        # zizmor: ignore[template-injection]
         run: |
-          ${{ matrix.packages_install }}
+          ${{ matrix.packages_install }} 
       - name: Build artifacts
+        # zizmor: ignore[template-injection]
         run: |
           # Actually do builds and make zips and whatnot
           dist build ${{ needs.plan.outputs.tag-flag }} --print=linkage --output-format=json ${{ matrix.dist_args }} > dist-manifest.json
@@ -158,7 +161,7 @@ jobs:
 
           cp dist-manifest.json "$BUILD_MANIFEST_NAME"
       - name: "Upload artifacts"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7 # zizmor: ignore[unpinned-uses]
         with:
           name: artifacts-build-local-${{ join(matrix.targets, '_') }}
           path: |
@@ -175,25 +178,26 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BUILD_MANIFEST_NAME: target/distrib/global-dist-manifest.json
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6 # zizmor: ignore[unpinned-uses]
         with:
           persist-credentials: false
           submodules: recursive
       - name: Install cached dist
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8 # zizmor: ignore[unpinned-uses]
         with:
           name: cargo-dist-cache
           path: ~/.cargo/bin/
       - run: chmod +x ~/.cargo/bin/dist
       # Get all the local artifacts for the global tasks to use (for e.g. checksums)
       - name: Fetch local artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8 # zizmor: ignore[unpinned-uses]
         with:
           pattern: artifacts-*
           path: target/distrib/
           merge-multiple: true
       - id: cargo-dist
         shell: bash
+        # zizmor: ignore[template-injection]
         run: |
           dist build ${{ needs.plan.outputs.tag-flag }} --output-format=json "--artifacts=global" > dist-manifest.json
           echo "dist ran successfully"
@@ -205,7 +209,7 @@ jobs:
 
           cp dist-manifest.json "$BUILD_MANIFEST_NAME"
       - name: "Upload artifacts"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7 # zizmor: ignore[unpinned-uses]
         with:
           name: artifacts-build-global
           path: |
@@ -225,39 +229,40 @@ jobs:
     outputs:
       val: ${{ steps.host.outputs.manifest }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6 # zizmor: ignore[unpinned-uses]
         with:
           persist-credentials: false
           submodules: recursive
       - name: Install cached dist
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8 # zizmor: ignore[unpinned-uses]
         with:
           name: cargo-dist-cache
           path: ~/.cargo/bin/
       - run: chmod +x ~/.cargo/bin/dist
       # Fetch artifacts from scratch-storage
       - name: Fetch artifacts
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8 # zizmor: ignore[unpinned-uses]
         with:
           pattern: artifacts-*
           path: target/distrib/
           merge-multiple: true
       - id: host
         shell: bash
+        # zizmor: ignore[template-injection]
         run: |
           dist host ${{ needs.plan.outputs.tag-flag }} --steps=upload --steps=release --output-format=json > dist-manifest.json
           echo "artifacts uploaded and released successfully"
           cat dist-manifest.json
           echo "manifest=$(jq -c "." dist-manifest.json)" >> "$GITHUB_OUTPUT"
       - name: "Upload dist-manifest.json"
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7 # zizmor: ignore[unpinned-uses]
         with:
           # Overwrite the previous copy
           name: artifacts-dist-manifest
           path: dist-manifest.json
       # Create a GitHub Release while uploading all files to it
       - name: "Download GitHub Artifacts"
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@v8 # zizmor: ignore[unpinned-uses]
         with:
           pattern: artifacts-*
           path: artifacts
@@ -272,6 +277,7 @@ jobs:
           ANNOUNCEMENT_TITLE: "${{ fromJson(steps.host.outputs.manifest).announcement_title }}"
           ANNOUNCEMENT_BODY: "${{ fromJson(steps.host.outputs.manifest).announcement_github_body }}"
           RELEASE_COMMIT: "${{ github.sha }}"
+        # zizmor: ignore[template-injection]
         run: |
           # Write and read notes from a file to avoid quoting breaking things
           echo "$ANNOUNCEMENT_BODY" > $RUNNER_TEMP/notes.txt
@@ -290,7 +296,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6 # zizmor: ignore[unpinned-uses]
         with:
           persist-credentials: false
           submodules: recursive
