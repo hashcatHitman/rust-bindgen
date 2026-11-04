@@ -1,4 +1,4 @@
-name: Bump version for release 
+name: Bump version for release
 
 on:
   workflow_dispatch:
@@ -10,19 +10,20 @@ on:
         type: choice
         options:
           - minor
-          - patch   
+          - patch
 
 permissions: {}
 
 jobs:
   bump-version:
     permissions:
-      id-token: write 
+      id-token: write
       pull-requests: write
       contents: write
 
     runs-on: ubuntu-latest
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@bf82d13b9b10051d224345ab9184f5ede0a94289 # v1.0.2-beta9
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -40,14 +41,14 @@ jobs:
         uses: taiki-e/install-action@9a29ce630c67077a359246f3e4f84941e05f28b5 # v1.17.3
         with:
           tool: sd
-      
+
       - name: Install npm
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
 
       - name: Install doctoc
         run: npm ci
 
-      - name: Bump version 
+      - name: Bump version
         run: |
           cargo release version ${INPUTS_LEVEL} --execute --no-confirm
         env:
@@ -62,7 +63,7 @@ jobs:
           sd "# Unreleased" "# Unreleased\n## Added\n## Changed\n## Removed\n## Fixed\n## Security\n\n# ${version} ($(date -I))" CHANGELOG.md
           ./node_modules/doctoc/doctoc.js CHANGELOG.md
 
-      - name: Create PR 
+      - name: Create PR
         uses: peter-evans/create-pull-request@4e1beaa7521e8b457b572c090b25bd3db56bf1c5 # v5.0.3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}

@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       commit:
-        description: 'Commit hash'
+        description: "Commit hash"
         required: true
         type: string
 
@@ -23,12 +23,13 @@ jobs:
        startsWith(github.event.pull_request.head.ref, 'bump-version') )
     runs-on: ubuntu-latest
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@bf82d13b9b10051d224345ab9184f5ede0a94289 # v1.0.2-beta9
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
           persist-credentials: false
-      
+
       - name: Compute the commit
         run: |
           if [[ -z "${INPUTS_COMMIT}" ]]; then
@@ -50,10 +51,10 @@ jobs:
       - name: Extract version
         run: |
           echo "version=$(cargo pkgid -p bindgen | cut -d '#' -f 2)" >> $GITHUB_ENV
- 
+
       - name: Create tag
         uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          commit_sha: ${{ env.commit }} 
+          commit_sha: ${{ env.commit }}
           custom_tag: ${{ env.version }}
