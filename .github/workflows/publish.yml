@@ -22,9 +22,9 @@ jobs:
         with:
           persist-credentials: false
       - name: Install stable toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: stable
+        run: rustup install ${TOOLCHAIN} && rustup default ${TOOLCHAIN}
+        env:
+          TOOLCHAIN: stable
       - name: Publish bindgen (lib)
         run: cargo publish --package bindgen --token ${CARGO_REGISTRY_TOKEN}
       - name: Publish bindgen-cli
