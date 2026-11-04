@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ !github.event.pull_request && (github.event.workflow_run.conclusion == 'success') && (github.event.workflow.name == 'Release') }}
     steps:
+      - uses: GitHubSecurityLab/actions-permissions/monitor@bf82d13b9b10051d224345ab9184f5ede0a94289 # v1.0.2-beta9
       - name: Print workflow event name
         run: echo "${GITHUB_EVENT_WORKFLOW_NAME}"
         env:
