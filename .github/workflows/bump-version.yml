@@ -17,9 +17,9 @@ permissions: {}
 jobs:
   bump-version:
     permissions:
-      id-token: none
-      pull-requests: write
-      contents: write
+      id-token: write # Required to sign commits with sigstore
+      pull-requests: write # Required by `peter-evans/create-pull-request` to open a PR
+      contents: none
 
     runs-on: ubuntu-latest
     steps:
