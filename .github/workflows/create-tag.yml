@@ -23,7 +23,7 @@ jobs:
        startsWith(github.event.pull_request.head.ref, 'bump-version') )
     runs-on: ubuntu-latest
     permissions:
-      contents: none
+      contents: write # Required by `mathieudutour/github-tag-action`
     steps:
       - uses: GitHubSecurityLab/actions-permissions/monitor@bf82d13b9b10051d224345ab9184f5ede0a94289 # v1.0.2-beta9
       - name: Checkout code
