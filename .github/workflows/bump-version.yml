@@ -17,7 +17,7 @@ permissions: {}
 jobs:
   bump-version:
     permissions:
-      id-token: write
+      id-token: none
       pull-requests: write
       contents: write
 
